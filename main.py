@@ -47,11 +47,17 @@ def rename_columns(df, column_mapping):
         df = df.withColumnRenamed(old_name, new_name)
     return df
 
+def save_data(df, output_path):
+    """
+    Save the processed data to a directory.
+    """
+    logger.info("Saving data")
+    df.write.mode("overwrite").option("header", "true").csv(output_path)
+
 def clean_data(client_data, financial_data, countries):
     """
     Clean and filter the data on the requested constraints.
     """
-
     # Clean the client data
     logger.info("Cleaning client data")
     client_data_cleaned = client_data.drop('first_name', 'last_name')
@@ -67,18 +73,10 @@ def clean_data(client_data, financial_data, countries):
     joined_data = join_datasets(financial_data_cleaned, filtered_client_data, "id")
 
     # Remap the columns
-    column_mapping = {'client_identifier': 'id', 'bitcoin_address': 'btc_a', 'cc_t': 'credit_card_type'}
+    column_mapping = {'client_identifier': 'id', 'btc_a': 'bitcoin_address', 'cc_t': 'credit_card_type'}
     cleaned_data = rename_columns(joined_data, column_mapping)
 
     return cleaned_data
-
-def save_data(df, output_path):
-    """
-    Save the processed data to a directory.
-    """
-
-    logger.info("Saving data...")
-    df.write.mode("overwrite").csv(output_path)
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -105,7 +103,7 @@ if __name__ == "__main__":
     processed_data = clean_data(client_data, financial_data, args.countries)
 
     # Save data
-    save_data(processed_data, "output/")
+    save_data(processed_data, "client_data/")
 
     # Stop Spark session
     spark.stop()
