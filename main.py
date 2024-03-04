@@ -72,7 +72,6 @@ def clean_data(client_data, financial_data, countries):
     # Filter client data by countries
     filtered_client_data = filter_by_field(client_data_cleaned, 'country', countries.split(','))
     
-
     # Join the data sets
     joined_data = join_datasets(financial_data_cleaned, filtered_client_data, "id")
 
