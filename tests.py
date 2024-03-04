@@ -187,16 +187,24 @@ if __name__ == "__main__":
     
     try:
         logger.info("Starting tests...")
-        test_drop_column()
-        test_drop_columns()
-        test_filter_by_field()
-        test_filter_by_fields()
-        test_join_datasets()
-        test_rename_columns()
-        test_clean_data()
-        logger.info("All tests passed successfully.")
-    except Exception as e:
-        logger.error(f"An error occurred: {str(e)}")
+        test_functions = [
+            test_drop_column,
+            test_drop_columns,
+            test_filter_by_field,
+            test_filter_by_fields,
+            test_join_datasets,
+            test_rename_columns,
+            test_clean_data
+        ]
+        
+        for test_function in test_functions:
+            try:
+                test_function()
+                logger.info(f"Test {test_function.__name__} passed successfully.")
+            except Exception as e:
+                logger.error(f"Test {test_function.__name__} failed: {str(e)}")
+        
+        logger.info("All tests executed.")
     finally:
         # Stop Spark session
         spark.stop()
