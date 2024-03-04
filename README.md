@@ -27,9 +27,9 @@ When everything is installed, you can run the application with the following com
  `python main.py <PATH_TO_CLIENT_DATASET> <PATH_TO_FINANCIAL_DATASET> <COUNTRIES>`
 
  Where:
- - PATH_TO_CLIENT_DATASET corresponds to the path of `dataset_one.csv`
- - PATH_TO_CLIENT_DATASET corresponds to the path of `dataset_two.csv`
+ - PATH_TO_CLIENT_DATASET corresponds to the relative path of `dataset_one.csv`
+ - PATH_TO_CLIENT_DATASET corresponds to the relative path of `dataset_two.csv`
  - COUNTRIES corresponds to the countries that you want to filter on, passed as a single argument representing the list of countries separated by a comma.
 
 For example you can use:
-`python main.py "/input/dataset_one.csv" "/input/dataset_two.csv" "Netherlands,United Kingdom"`
+`python main.py "input/dataset_one.csv" "input/dataset_two.csv" "Netherlands,United Kingdom"`

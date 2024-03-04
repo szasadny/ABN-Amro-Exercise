@@ -1,4 +1,6 @@
+import argparse
 import logging
+import os
 from pyspark.sql import SparkSession
 
 # Set up logging
@@ -9,8 +11,7 @@ def load_data(spark, client_data_path, financial_data_path):
     """
     Load client and financial data from CSV files.
     """
-
-    logger.info("Loading data...")
+    logger.info("Loading data")
     client_data = spark.read.csv(client_data_path, header=True)
     financial_data = spark.read.csv(financial_data_path, header=True)
     return client_data, financial_data
@@ -46,9 +47,9 @@ def rename_columns(df, column_mapping):
         df = df.withColumnRenamed(old_name, new_name)
     return df
 
-def clean_data(client_data, financial_data):
+def clean_data(client_data, financial_data, countries):
     """
-    Clean and filter the data on the requested constraints. TODO: specifieker maken
+    Clean and filter the data on the requested constraints.
     """
 
     # Clean the client data
@@ -58,8 +59,9 @@ def clean_data(client_data, financial_data):
     # Cleaning financial data
     logger.info("Cleaning financial data")
     financial_data_cleaned = drop_columns(financial_data, ['cc_n'])
-    filtered_client_data = filter_by_field(client_data_cleaned, 'country', 'United Kingdom')
-    filtered_client_data = filter_by_field(client_data_cleaned, 'country', 'Netherlands')
+    
+    # Filter client data by countries
+    filtered_client_data = client_data_cleaned.filter(client_data_cleaned['country'].isin(countries.split(',')))
 
     # Join the data sets
     joined_data = join_datasets(financial_data_cleaned, filtered_client_data, "id")
@@ -79,6 +81,17 @@ def save_data(df, output_path):
     df.write.mode("overwrite").csv(output_path)
 
 if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Process client data")
+    parser.add_argument("client_data_path", type=str, help="(Relative) path to client data CSV file")
+    parser.add_argument("financial_data_path", type=str, help="(Relative) path to financial data CSV file")
+    parser.add_argument("countries", type=str, help="Comma-separated list of countries to filter")
+    args = parser.parse_args()
+
+    # Set the relative paths with the current working directory
+    current_dir = os.getcwd()
+    client_data_path = os.path.join(current_dir, args.client_data_path)
+    financial_data_path = os.path.join(current_dir, args.financial_data_path)
 
     # Initialize Spark session
     spark = SparkSession.builder \
@@ -86,10 +99,10 @@ if __name__ == "__main__":
                         .getOrCreate()
 
     # Load in the data
-    client_data, financial_data = load_data(spark, "input/dataset_one.csv", "input/dataset_two.csv")
+    client_data, financial_data = load_data(spark, args.client_data_path, args.financial_data_path)
 
     # Clean and filter the data
-    processed_data = clean_data(client_data, financial_data)
+    processed_data = clean_data(client_data, financial_data, args.countries)
 
     # Save data
     save_data(processed_data, "output/")
