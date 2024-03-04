@@ -1,1 +1,2 @@
+chispa==0.10.0
 pyspark==3.5.1

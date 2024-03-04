@@ -33,12 +33,12 @@ def drop_columns(df, columns):
     logger.info(f"Dropping columns: {columns}")
     return df.drop(*columns)
 
-def filter_by_field(df, field_name, value):
+def filter_by_field(df, field_name, values):
     """
     Filter DataFrame to include only rows where the specified field matches the given value.
     """
-    logger.info(f"Filtering data where {field_name} is {value}")
-    return df.filter(df[field_name] == value)
+    logger.info(f"Filtering data where {field_name} is in {values}")
+    return df.filter(df[field_name].isin(values))
 
 def join_datasets(df1, df2, on_column):
     """
@@ -70,8 +70,8 @@ def clean_data(client_data, financial_data, countries):
     financial_data_cleaned = drop_columns(financial_data, ['cc_n'])
     
     # Filter client data by countries
-    filtered_client_data = client_data_cleaned.filter(client_data_cleaned['country'].isin(countries.split(',')))
-
+    filtered_client_data = filter_by_field(client_data_cleaned, 'country', countries.split(','))
+    
     # Join the data sets
     joined_data = join_datasets(financial_data_cleaned, filtered_client_data, "id")
 
@@ -97,9 +97,7 @@ if __name__ == "__main__":
     financial_data_path = os.path.join(os.getcwd(), args.financial_data_path)
 
     # Initialize Spark session
-    spark = SparkSession.builder \
-                        .appName("PySpark Client Data Processor") \
-                        .getOrCreate()
+    spark = SparkSession.builder.appName("PySpark Client Data Processor").getOrCreate()
     
     try:
         # Load in the data

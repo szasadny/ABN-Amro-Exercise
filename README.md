@@ -33,3 +33,7 @@ When everything is installed, you can run the application with the following com
 
 For example you can use:
 `python main.py "input/dataset_one.csv" "input/dataset_two.csv" "Netherlands,United Kingdom"`
+
+## Testing
+This project has tests written for the functions using the [chispa](https://github.com/MrPowers/chispa) package. You can run the tests from the root directory using:
+`python tests.py`
