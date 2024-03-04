@@ -196,15 +196,20 @@ if __name__ == "__main__":
             test_rename_columns,
             test_clean_data
         ]
-        
+
+        # Keep track of how many tests are completed succesfully
+        total_tests = len(test_functions)
+        successful_tests = 0
+
         for test_function in test_functions:
             try:
                 test_function()
+                successful_tests += 1
                 logger.info(f"Test {test_function.__name__} passed successfully.")
             except Exception as e:
                 logger.error(f"Test {test_function.__name__} failed: {str(e)}")
         
-        logger.info("All tests executed.")
+        logger.info(f"All tests executed. {successful_tests}/{total_tests} tests passed successfully.")
     finally:
         # Stop Spark session
         spark.stop()
