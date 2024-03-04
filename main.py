@@ -7,6 +7,16 @@ from pyspark.sql import SparkSession
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def parse_arguments():
+    """
+    Parse command line arguments.
+    """
+    parser = argparse.ArgumentParser(description="Process client data")
+    parser.add_argument("client_data_path", type=str, help="(Relative) path to client data CSV file")
+    parser.add_argument("financial_data_path", type=str, help="(Relative) path to financial data CSV file")
+    parser.add_argument("countries", type=str, help="Comma-separated list of countries to filter")
+    return parser.parse_args()
+
 def load_data(spark, client_data_path, financial_data_path):
     """
     Load client and financial data from CSV files.
@@ -47,22 +57,15 @@ def rename_columns(df, column_mapping):
         df = df.withColumnRenamed(old_name, new_name)
     return df
 
-def save_data(df, output_path):
-    """
-    Save the processed data to a directory.
-    """
-    logger.info("Saving data")
-    df.write.mode("overwrite").option("header", "true").csv(output_path)
-
 def clean_data(client_data, financial_data, countries):
     """
     Clean and filter the data on the requested constraints.
     """
     # Clean the client data
     logger.info("Cleaning client data")
-    client_data_cleaned = client_data.drop('first_name', 'last_name')
+    client_data_cleaned = drop_columns(client_data, ['first_name', 'last_name'])
 
-    # Cleaning financial data
+    # Clean the financial data
     logger.info("Cleaning financial data")
     financial_data_cleaned = drop_columns(financial_data, ['cc_n'])
     
@@ -78,34 +81,39 @@ def clean_data(client_data, financial_data, countries):
 
     return cleaned_data
 
+def save_data(df, output_path):
+    """
+    Save the processed data to a directory.
+    """
+    logger.info("Saving data")
+    df.write.mode("overwrite").option("header", "true").csv(output_path)
+
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Process client data")
-    parser.add_argument("client_data_path", type=str, help="(Relative) path to client data CSV file")
-    parser.add_argument("financial_data_path", type=str, help="(Relative) path to financial data CSV file")
-    parser.add_argument("countries", type=str, help="Comma-separated list of countries to filter")
-    args = parser.parse_args()
+    args = parse_arguments()
 
     # Set the relative paths with the current working directory
-    current_dir = os.getcwd()
-    client_data_path = os.path.join(current_dir, args.client_data_path)
-    financial_data_path = os.path.join(current_dir, args.financial_data_path)
+    client_data_path = os.path.join(os.getcwd(), args.client_data_path)
+    financial_data_path = os.path.join(os.getcwd(), args.financial_data_path)
 
     # Initialize Spark session
     spark = SparkSession.builder \
                         .appName("PySpark Client Data Processor") \
                         .getOrCreate()
+    
+    try:
+        # Load in the data
+        client_data, financial_data = load_data(spark, client_data_path, financial_data_path)
 
-    # Load in the data
-    client_data, financial_data = load_data(spark, args.client_data_path, args.financial_data_path)
+        # Clean and filter the data
+        processed_data = clean_data(client_data, financial_data, args.countries)
 
-    # Clean and filter the data
-    processed_data = clean_data(client_data, financial_data, args.countries)
-
-    # Save data
-    save_data(processed_data, "client_data/")
-
-    # Stop Spark session
-    spark.stop()
+        # Output the data
+        save_data(processed_data, "client_data/")
+    except Exception as e:
+        logger.error(f"An error occurred: {str(e)}")
+    finally:
+        # Stop Spark session
+        spark.stop()
 
     logger.info("Processing completed.")
