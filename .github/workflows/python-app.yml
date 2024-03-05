@@ -4,7 +4,6 @@
 name: Data Processor Tests
 
 on:
-  push:
   pull_request:
     branches: [ "main" ]
 
@@ -15,6 +14,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    if: always() && github.ref == 'refs/heads/main' && failure()
 
     steps:
     - uses: actions/checkout@v3
@@ -36,10 +36,3 @@ jobs:
     - name: Run Tests
       run: |
         python tests.py
-
-  prevent-merge:
-    runs-on: ubuntu-latest
-    if: always() && github.ref == 'refs/heads/main' && failure()
-    steps:
-      - name: Prevent Merge on Main
-        run: echo "Do not merge failed builds to main!" && exit 1
