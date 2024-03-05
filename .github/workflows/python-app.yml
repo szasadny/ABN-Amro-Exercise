@@ -5,8 +5,6 @@ name: Data Processor Tests
 
 on:
   push:
-    branches: 
-      - ${GITHUB_REF##*/}
   pull_request:
     branches: [ "main" ]
 
