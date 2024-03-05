@@ -1,11 +1,9 @@
 import argparse
-import logging
 import os
 from pyspark.sql import SparkSession
+from logger import setup_logging
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logging('main.log')
 
 def parse_arguments():
     """

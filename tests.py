@@ -1,12 +1,11 @@
 import logging
+from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructField, StringType, IntegerType, LongType, StructType
-from chispa.dataframe_comparer import assert_df_equality
+from logger import setup_logging
 from main import *
 
-# Setting up logging configuration
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logging('test.log')
 
 # Define sample datasets for testing
 client_table_values = [
