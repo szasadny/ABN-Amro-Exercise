@@ -44,13 +44,6 @@ output_schema = StructType([
     StructField('country', StringType(), True),
 ])
 
-def test_invalid_function():
-    """
-    Task failed succesfully
-    """
-    # Intentionally raise a ValueError
-    raise ValueError("This test intentionally raises an error.")
-
 def test_drop_column():
     """
     Test for drop_column function.
@@ -196,7 +189,6 @@ if __name__ == "__main__":
     try:
         logger.info("Starting tests...")
         test_functions = [
-            test_invalid_function,
             test_drop_column,
             test_drop_columns,
             test_filter_by_field,
