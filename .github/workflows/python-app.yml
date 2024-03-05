@@ -5,9 +5,10 @@ name: Data Processor Tests
 
 on:
   push:
-    branches: [ "feature_testing_pipeline" ]
+    branches: 
+      - ${GITHUB_REF##*/}
   pull_request:
-    branches: [ "feature_testing_pipeline" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -37,3 +38,10 @@ jobs:
     - name: Run Tests
       run: |
         python tests.py
+
+  prevent-merge:
+    runs-on: ubuntu-latest
+    if: always() && github.ref == 'refs/heads/main' && failure()
+    steps:
+      - name: Prevent Merge on Main
+        run: echo "Do not merge failed builds to main!" && exit 1
