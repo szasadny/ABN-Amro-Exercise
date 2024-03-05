@@ -185,6 +185,7 @@ if __name__ == "__main__":
     # Initialize Spark session
     spark = SparkSession.builder.appName("Data Processor Test").getOrCreate()
     
+    test_failed = False # Keep track if a test fails to raise an exception when all the tests have ran
     try:
         logger.info("Starting tests...")
         test_functions = [
@@ -207,11 +208,16 @@ if __name__ == "__main__":
                 successful_tests += 1
                 logger.info(f"Test {test_function.__name__} passed successfully.")
             except Exception as e:
+                test_failed = True
                 logger.error(f"Test {test_function.__name__} failed: {str(e)}")
         
         logger.info(f"All tests executed. {successful_tests}/{total_tests} tests passed successfully.")
     finally:
         # Stop Spark session
         spark.stop()
+
+    # Raise an exception if any test failed
+    if test_failed:
+        raise RuntimeError("One or more tests failed.")
 
     logger.info("Finished testing")
